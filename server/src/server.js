@@ -2,6 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const submissionRoutes = require('./routes/submissionRoutes');
+const assessmentRoutes = require('./routes/assessmentRoutes');
+const progressRoutes = require('./routes/progressRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -19,6 +26,24 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/submissions', submissionRoutes);
+app.use('/api/assessments', assessmentRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/teacher/dashboard', (req, res, next) => {
+  req.url = '/teacher';
+  dashboardRoutes(req, res, next);
+});
+app.use('/api/student/dashboard', (req, res, next) => {
+  req.url = '/student';
+  dashboardRoutes(req, res, next);
+});
+
 
 // Health-check API endpoint (Phase 1 Requirement)
 app.get('/api/health', (req, res) => {

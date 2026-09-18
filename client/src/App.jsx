@@ -1,57 +1,155 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import HealthStatus from './components/HealthStatus';
-import { ShieldCheck, Heart, Sparkles, Layers, Code, Server, Database } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import DashboardShell from './pages/DashboardShell';
+import AssignmentsPage from './pages/AssignmentsPage';
+import SubmissionsPage from './pages/SubmissionsPage';
+import AssessmentsPage from './pages/AssessmentsPage';
+import ProgressPage from './pages/ProgressPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+
+const Navbar = () => {
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const role = user?.role?.toLowerCase();
+  const isTeacher = role === 'teacher' || role === 'admin';
+
+  return (
+    <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="flex items-center space-x-6">
+          <Link to="/" className="flex items-center space-x-2 font-bold text-slate-900 text-lg">
+            <span className="bg-indigo-600 text-white px-2 py-0.5 rounded text-sm font-black">D360</span>
+            <span>Diksha<span className="text-indigo-600">360</span></span>
+          </Link>
+
+          {isAuthenticated && (
+            <nav className="hidden md:flex items-center space-x-4 text-xs font-semibold text-slate-600">
+              <Link to="/dashboard" className="hover:text-indigo-600 transition-colors">
+                Dashboard
+              </Link>
+              <Link to="/assignments" className="hover:text-indigo-600 transition-colors">
+                Assignments
+              </Link>
+              <Link to="/assessments" className="hover:text-indigo-600 transition-colors">
+                Assessments
+              </Link>
+
+              {isTeacher ? (
+                <Link to="/submissions" className="hover:text-indigo-600 transition-colors">
+                  Submissions
+                </Link>
+              ) : (
+                <>
+                  <Link to="/progress" className="hover:text-indigo-600 transition-colors">
+                    Progress
+                  </Link>
+                  <Link to="/leaderboard" className="hover:text-indigo-600 transition-colors">
+                    Leaderboard
+                  </Link>
+                </>
+              )}
+            </nav>
+          )}
+        </div>
+
+        <div className="flex items-center space-x-3">
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-3 text-xs">
+              <span className="hidden sm:inline-block font-semibold text-slate-700">
+                {user?.name} <span className="text-slate-400 font-normal">({role?.toUpperCase()})</span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 border border-slate-300 text-slate-700 rounded hover:bg-slate-50 font-medium transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-2 text-xs">
+              <Link
+                to="/login"
+                className="px-3 py-1.5 border border-slate-300 text-slate-700 rounded hover:bg-slate-50 font-medium"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 font-semibold"
+              >
+                Register
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
 
 const Home = () => {
+  const { isAuthenticated, user } = useAuth();
+
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4 max-w-3xl mx-auto pt-6">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-full uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>JPMorgan Code for Good 2026 Solution</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">
-          Diksha360 Platform
-        </h1>
-        <p className="text-lg text-slate-300">
-          Centralized Holistic Child Development Tracking Ecosystem for Diksha Foundation
-        </p>
+    <div className="max-w-4xl mx-auto py-12 px-4 text-center space-y-6">
+      <div className="inline-block px-3 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold rounded-full uppercase tracking-wider">
+        Diksha Foundation Educational Ecosystem
+      </div>
+      <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+        Diksha360 Educational Management Portal
+      </h1>
+      <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+        A simple, clean holistic child development platform supporting academic coursework, assessment evaluations, and learning progress tracking.
+      </p>
+
+      <div className="flex justify-center space-x-4 pt-2">
+        {isAuthenticated ? (
+          <Link
+            to="/dashboard"
+            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded shadow-sm"
+          >
+            Go to Dashboard ({user?.role?.toUpperCase()}) →
+          </Link>
+        ) : (
+          <div className="flex space-x-3">
+            <Link
+              to="/login"
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded shadow-sm"
+            >
+              Sign In to Access Dashboard →
+            </Link>
+            <Link
+              to="/register"
+              className="px-6 py-2.5 border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-semibold rounded shadow-sm"
+            >
+              Register Account
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* Health Verification Section */}
-      <HealthStatus />
-
-      {/* Phase 1 Architecture Overview */}
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-        <div className="p-5 bg-slate-800/40 rounded-xl border border-slate-700/60 text-left hover:border-slate-600 transition-colors">
-          <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-lg w-fit mb-3">
-            <Code className="w-5 h-5" />
-          </div>
-          <h3 className="text-base font-semibold text-white mb-1">Frontend Setup</h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Vite + React 18, Tailwind CSS, React Router v6, Axios API client, Recharts & Lucide React.
-          </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 text-left text-xs">
+        <div className="p-4 bg-white rounded border border-slate-200 space-y-1">
+          <p className="font-bold text-slate-900">Academic Assignments</p>
+          <p className="text-slate-500">Teachers publish course assignments; students submit text/file solutions for grading.</p>
         </div>
-
-        <div className="p-5 bg-slate-800/40 rounded-xl border border-slate-700/60 text-left hover:border-slate-600 transition-colors">
-          <div className="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-lg w-fit mb-3">
-            <Server className="w-5 h-5" />
-          </div>
-          <h3 className="text-base font-semibold text-white mb-1">Backend Setup</h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Express server with modular structure, CORS configuration, dotenv handling, and error middlewares.
-          </p>
+        <div className="p-4 bg-white rounded border border-slate-200 space-y-1">
+          <p className="font-bold text-slate-900">Quizzes & Assessments</p>
+          <p className="text-slate-500">Automated multiple-choice evaluations with instant score calculation and answer review.</p>
         </div>
-
-        <div className="p-5 bg-slate-800/40 rounded-xl border border-slate-700/60 text-left hover:border-slate-600 transition-colors">
-          <div className="p-2.5 bg-amber-500/10 text-amber-400 rounded-lg w-fit mb-3">
-            <Database className="w-5 h-5" />
-          </div>
-          <h3 className="text-base font-semibold text-white mb-1">MongoDB Structure</h3>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Mongoose connection layer with standard database configuration and connection handling.
-          </p>
+        <div className="p-4 bg-white rounded border border-slate-200 space-y-1">
+          <p className="font-bold text-slate-900">Progress & Leaderboard</p>
+          <p className="text-slate-500">Transparent progress tracking, activity logs, and center-wide student score rankings.</p>
         </div>
       </div>
     </div>
@@ -60,45 +158,73 @@ const Home = () => {
 
 const App = () => {
   return (
-    <Router>
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col justify-between">
-        {/* Header */}
-        <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center text-slate-950 font-bold text-lg shadow-lg shadow-emerald-500/20">
-                D360
-              </div>
-              <span className="font-bold text-lg text-white tracking-wide">
-                Diksha<span className="text-emerald-400">360</span>
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-xs font-semibold px-3 py-1 bg-slate-800 border border-slate-700 text-slate-300 rounded-full">
-                Phase 1 Foundation Ready
-              </span>
-            </div>
-          </div>
-        </header>
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
+          <Navbar />
 
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-          <Routes>
-            <Route path="/" element={<Home />} />
-          </Routes>
-        </main>
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardShell />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/assignments"
+                element={
+                  <ProtectedRoute>
+                    <AssignmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/submissions"
+                element={
+                  <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+                    <SubmissionsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/assessments"
+                element={
+                  <ProtectedRoute>
+                    <AssessmentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/progress"
+                element={
+                  <ProtectedRoute allowedRoles={['student']}>
+                    <ProgressPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/leaderboard"
+                element={
+                  <ProtectedRoute>
+                    <LeaderboardPage />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </main>
 
-        {/* Footer */}
-        <footer className="border-t border-slate-800 bg-slate-950 py-6">
-          <div className="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© 2026 Diksha Foundation x JPMorgan Code for Good. All rights reserved.</p>
-            <p className="flex items-center gap-1 text-slate-400">
-              Built with <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 inline" /> for Holistic Child Empowerment
-            </p>
-          </div>
-        </footer>
-      </div>
-    </Router>
+          <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+            © 2026 Diksha Foundation Platform. All rights reserved.
+          </footer>
+        </div>
+      </Router>
+    </AuthProvider>
   );
 };
 
